@@ -14,7 +14,7 @@ device = "cpu"
 # model = torch.hub.load("bryandlee/animegan2-pytorch:main", "generator", pretrained="face_paint_512_v2")
 model = Generator()
 model = model.eval().to(device)
-# model.load_state_dict(torch.load("../weights/face_paint_512_v2.pt", map_location=device))
+model.load_state_dict(torch.load("../weights/face_paint_512_v2.pt", map_location=device))
 print(model)
 
 
@@ -23,7 +23,7 @@ def face2paint(
         side_by_side: bool = False,
 ) -> Image.Image:
     img_pt = to_tensor(img).unsqueeze(0) * 2 - 1
-    output = model(img_pt.to(device)).cpu()[0]
+    output = model(img_pt.to(device), align_corners=False).cpu()[0]
 
     if side_by_side:
         output = torch.cat([input[0], output], dim=2)
@@ -53,4 +53,9 @@ print(summary(model, input_size=(channels, height, width)))
 
 # save model
 torch.save(model, "model.bin")
+torch.save(model.state_dict(), "model_state")
+
+for k in model.state_dict():
+    print(k)
+    print('--------------')
 

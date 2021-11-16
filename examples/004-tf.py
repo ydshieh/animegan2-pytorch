@@ -70,3 +70,6 @@ with Image.open(img_path) as img:
 #    print(k)
 #    print('--------------')
 
+for variable in model.weights:
+    print(variable.name)
+    print('----------------------')

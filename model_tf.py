@@ -195,57 +195,60 @@ class TFGenerator(tf.keras.layers.Layer):
         super().__init__(**kwargs)
 
         self.block_a = [
-            TFConvNormLReLU(out_ch=32, kernel_size=7, padding=3, name=""),
-            TFConvNormLReLU(out_ch=64, stride=2, padding=(0, 1, 0, 1), name=""),
-            TFConvNormLReLU(out_ch=64, name="")
+            TFConvNormLReLU(out_ch=32, kernel_size=7, padding=3, name=f"block_a_._{0}"),
+            TFConvNormLReLU(out_ch=64, stride=2, padding=(0, 1, 0, 1), name=f"block_a_._{1}"),
+            TFConvNormLReLU(out_ch=64, name=f"block_a_._{2}")
         ]
 
         self.block_b = [
-            TFConvNormLReLU(out_ch=128, stride=2, padding=(0, 1, 0, 1), name=""),
-            TFConvNormLReLU(out_ch=128, name="")
+            TFConvNormLReLU(out_ch=128, stride=2, padding=(0, 1, 0, 1), name=f"block_b_._{0}"),
+            TFConvNormLReLU(out_ch=128, name=f"block_b_._{1}")
         ]
 
         self.block_c = [
-            TFConvNormLReLU(out_ch=128, name=""),
-            TFInvertedResBlock(in_ch=128, out_ch=256, expansion_ratio=2, name=""),
-            TFInvertedResBlock(in_ch=256, out_ch=256, expansion_ratio=2, name=""),
-            TFInvertedResBlock(in_ch=256, out_ch=256, expansion_ratio=2, name=""),
-            TFInvertedResBlock(in_ch=256, out_ch=256, expansion_ratio=2, name=""),
-            TFConvNormLReLU(out_ch=128, name=""),
+            TFConvNormLReLU(out_ch=128, name=f"block_c_._{0}"),
+            TFInvertedResBlock(in_ch=128, out_ch=256, expansion_ratio=2, name=f"block_c_._{1}"),
+            TFInvertedResBlock(in_ch=256, out_ch=256, expansion_ratio=2, name=f"block_c_._{2}"),
+            TFInvertedResBlock(in_ch=256, out_ch=256, expansion_ratio=2, name=f"block_c_._{3}"),
+            TFInvertedResBlock(in_ch=256, out_ch=256, expansion_ratio=2, name=f"block_c_._{4}"),
+            TFConvNormLReLU(out_ch=128, name=f"block_c_._{5}"),
         ]
 
         self.block_d = [
-            TFConvNormLReLU(out_ch=128, name=""),
-            TFConvNormLReLU(out_ch=128, name="")
+            TFConvNormLReLU(out_ch=128, name=f"block_d_._{0}"),
+            TFConvNormLReLU(out_ch=128, name=f"block_d_._{1}")
         ]
 
         self.block_e = [
-            TFConvNormLReLU(out_ch=64, name=""),
-            TFConvNormLReLU(out_ch=64, name=""),
-            TFConvNormLReLU(out_ch=32, kernel_size=7, padding=3, name="")
+            TFConvNormLReLU(out_ch=64, name=f"block_e_._{0}"),
+            TFConvNormLReLU(out_ch=64, name=f"block_e_._{1}"),
+            TFConvNormLReLU(out_ch=32, kernel_size=7, padding=3, name=f"block_e_._{2}")
         ]
 
         self.out_layer = [
-            tf.keras.layers.Conv2D(filters=3, kernel_size=1, strides=1, padding="valid", use_bias=False, name=""),
+            tf.keras.layers.Conv2D(filters=3, kernel_size=1, strides=1, padding="valid", use_bias=False, name=f"out_layer_._{0}"),
             tf.keras.layers.Activation("tanh")
         ]
 
     def call(self, inputs, align_corners=True, training=False):
 
+        # Transpose (B, C, H, W) to (B, H, W, C)
+        inputs = tf.transpose(inputs, perm=(0, 2, 3, 1))
+
         x = inputs
 
         # out = self.block_a(input)
-        for i, layer_module in self.block_a:
+        for i, layer_module in enumerate(self.block_a):
             x = layer_module(x)
 
         # half_size = x.size()[-2:]
 
         # out = self.block_b(out)
-        for i, layer_module in self.block_b:
+        for i, layer_module in enumerate(self.block_b):
             x = layer_module(x)
 
         # out = self.block_c(out)
-        for i, layer_module in self.block_c:
+        for i, layer_module in enumerate(self.block_c):
             x = layer_module(x)
 
         if align_corners:
@@ -258,7 +261,7 @@ class TFGenerator(tf.keras.layers.Layer):
             x = tf.image.resize(x, size=(H, W), method="bilinear", name="...")
 
         # out = self.block_d(out)
-        for i, layer_module in self.block_d:
+        for i, layer_module in enumerate(self.block_d):
             x = layer_module(x)
 
         if align_corners:
@@ -271,11 +274,11 @@ class TFGenerator(tf.keras.layers.Layer):
             x = tf.image.resize(x, size=(H, W), method="bilinear", name="...")
 
         # out = self.block_e(out)
-        for i, layer_module in self.block_e:
+        for i, layer_module in enumerate(self.block_e):
             x = layer_module(x)
 
         # out = self.out_layer(out)
-        for i, layer_module in self.out_layer:
+        for i, layer_module in enumerate(self.out_layer):
             x = layer_module(x)
 
         return x
