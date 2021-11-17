@@ -59,7 +59,7 @@ model_pt_state_dict = torch.load("./weights/model_pt_state_dict", map_location=d
 model_tf = TFGenerator()
 img_tf = tf.zeros(shape=(1, 3, 512, 512,))
 model_tf(img_tf, align_corners=False)
-model_tf.load_weights("./weights/model_tf")
+# model_tf.load_weights("./weights/model_tf")
 
 from collections import OrderedDict
 import json
@@ -69,6 +69,7 @@ original_pt_to_pt_correspondence = OrderedDict()
 def convert_tf_name_to_pt_name(tf_name):
 
     tf_name = tf_name.replace("_._", "/")
+    tf_name = tf_name.replace("depthwise_kernel:0", "weight")
     tf_name = tf_name.replace("kernel:0", "weight")
     tf_name = tf_name.replace("bias:0", "bias")
     tf_name = tf_name.replace("gamma:0", "weight")
@@ -109,11 +110,26 @@ for tf_weight, pt_name in zip(model_tf.weights, model_pt_state_dict):
     print(tf_weight.shape)
     print(pt_weight.shape)
 
+    if "depthwise_kernel" in tf_weight.name:
+        print(tf_weight.shape)
+        print(pt_weight.shape)
+
+    if "depthwise_kernel" in tf_weight.name:
+        pass
+
     pt_weight = tf.constant(pt_weight.detach().cpu().numpy())
     if len(pt_weight.shape) == 4:
-        pt_weight = tf.transpose(pt_weight, perm=(2, 3, 1, 0))
+        if "depthwise_kernel" in tf_weight.name:
+            # TODO: check HF code
+            pt_weight = tf.transpose(pt_weight, perm=(2, 3, 0, 1))
+        else:
+            pt_weight = tf.transpose(pt_weight, perm=(2, 3, 1, 0))
     else:
         pt_weight = tf.transpose(pt_weight)
+    if pt_weight.shape != tf_weight.shape:
+        print(tf_weight.shape)
+        print(pt_weight.shape)
+
     assert pt_weight.shape == tf_weight.shape
 
     tf_weight_value_tuples.append((tf_weight, pt_weight))

@@ -37,20 +37,38 @@ class TFConvNormLReLU(tf.keras.layers.Layer):
             [0, 0],  # channel dimension
         ]
 
-        # TF's version doesn't use `groups`.
-        self.conv2d = tf.keras.layers.Conv2D(
-            filters=out_ch,
-            kernel_size=kernel_size,
-            strides=stride,
-            padding="valid",
-            data_format="channels_last",
-            groups=groups,
-            activation=None,
-            use_bias=bias,
-            # Used by TF's version.
-            # kernel_initializer=tf.keras.initializers.VarianceScaling(),
-            name="conv2d"
-        )
+        if groups == 1:
+
+            # TF's version doesn't use `groups`.
+            self.conv2d = tf.keras.layers.Conv2D(
+                filters=out_ch,
+                kernel_size=kernel_size,
+                strides=stride,
+                padding="valid",
+                data_format="channels_last",
+                groups=groups,
+                activation=None,
+                use_bias=bias,
+                # Used by TF's version.
+                # kernel_initializer=tf.keras.initializers.VarianceScaling(),
+                name="conv2d"
+            )
+
+        else:
+
+            # TF's version doesn't use `groups`.
+            self.conv2d = tf.keras.layers.DepthwiseConv2D(
+                kernel_size=kernel_size,
+                strides=stride,
+                padding="valid",
+                depth_multiplier=1,
+                data_format="channels_last",
+                activation=None,
+                use_bias=bias,
+                # Used by TF's version.
+                # kernel_initializer=tf.keras.initializers.VarianceScaling(),
+                name="conv2d"
+            )
 
         # self.normalization = tfa.layers.GroupNormalization()
         # TODO 1: PT's version use `torch.nn.GroupNorm`. However, TF doesn't have it (only exists in TFA).
