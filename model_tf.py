@@ -171,7 +171,7 @@ class TFGenerator(tf.keras.Model):
             tf.keras.layers.Activation("tanh")
         ]
 
-    def call(self, inputs, align_corners=True, training=False):
+    def call(self, inputs, align_corners=False, training=False):
 
         # Transpose (B, C, H, W) to (B, H, W, C)
         inputs = tf.transpose(inputs, perm=(0, 2, 3, 1))
@@ -196,7 +196,8 @@ class TFGenerator(tf.keras.Model):
             # out = F.interpolate(out, half_size, mode="bilinear", align_corners=True)
             raise ValueError("")
         else:
-            H, W = tf.shape(x)[1:3]
+            # Make graph mode work
+            H, W = tf.shape(x)[1], tf.shape(x)[2]
             H *= 2
             W *= 2
             x = tf.image.resize(x, size=(H, W), method="bilinear", name="...")
@@ -209,7 +210,8 @@ class TFGenerator(tf.keras.Model):
             # out = F.interpolate(out, input.size()[-2:], mode="bilinear", align_corners=True)
             raise ValueError("")
         else:
-            H, W = tf.shape(x)[1:3]
+            # Make graph mode work
+            H, W = tf.shape(x)[1], tf.shape(x)[2]
             H *= 2
             W *= 2
             x = tf.image.resize(x, size=(H, W), method="bilinear", name="...")
