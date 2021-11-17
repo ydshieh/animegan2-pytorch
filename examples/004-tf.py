@@ -14,8 +14,11 @@ device = "cpu"
 
 # model = torch.hub.load("bryandlee/animegan2-pytorch:main", "generator", pretrained="face_paint_512_v2")
 model = TFGenerator()
-# model = model.eval().to(device)
-# model.load_state_dict(torch.load("../weights/face_paint_512_v2.pt", map_location=device))
+
+img_tf = tf.zeros(shape=(1, 3, 512, 512,))
+model(img_tf, align_corners=False)
+model.load_weights("../weights/model_tf")
+
 print(model)
 
 
@@ -70,6 +73,6 @@ with Image.open(img_path) as img:
 #    print(k)
 #    print('--------------')
 
-for variable in model.weights:
-    print(variable.name)
-    print('----------------------')
+# for variable in model.weights:
+#     print(variable.name)
+#     print('----------------------')

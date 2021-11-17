@@ -11,10 +11,9 @@ from model_pt import PTGenerator
 torch.set_grad_enabled(False)
 device = "cpu"
 
-# model = torch.hub.load("bryandlee/animegan2-pytorch:main", "generator", pretrained="face_paint_512_v2")
 model = PTGenerator()
 model = model.eval().to(device)
-# model.load_state_dict(torch.load("../weights/face_paint_512_v2.pt", map_location=device))
+model.load_state_dict(torch.load("../weights/model_pt_state_dict", map_location=device))
 print(model)
 
 
@@ -47,15 +46,15 @@ with Image.open(img_path) as img:
     img_resized.show()
     animed_img.show()
 
-from torchsummary import summary
-
-print(summary(model, input_size=(channels, height, width)))
-
-# save model
-torch.save(model, "model.bin")
-torch.save(model.state_dict(), "model_state")
-
-for k in model.state_dict():
-    print(k)
-    print('--------------')
-
+# from torchsummary import summary
+#
+# print(summary(model, input_size=(channels, height, width)))
+#
+# # save model
+# torch.save(model, "model.bin")
+# torch.save(model.state_dict(), "model_state")
+#
+# for k in model.state_dict():
+#     print(k)
+#     print('--------------')
+#

@@ -1,5 +1,6 @@
 # import torch
 import tensorflow as tf
+import tensorflow_addons as tfa
 # from torch import nn
 import torch.nn.functional as F
 
@@ -54,7 +55,8 @@ class TFConvNormLReLU(tf.keras.layers.Layer):
         # self.normalization = tfa.layers.GroupNormalization()
         # TODO 1: PT's version use `torch.nn.GroupNorm`. However, TF doesn't have it (only exists in TFA).
         # TODO 2: `LayerNormalization` has default `epsilon=1e-3`, but `torch.nn.GroupNorm` has default `eps=1e-5`.
-        self.normalization = tf.keras.layers.LayerNormalization(epsilon=1e-05, center=True, scale=True, name="normalization")
+        ### self.normalization = tf.keras.layers.LayerNormalization(axis=[1, 2, 3], epsilon=1e-05, center=True, scale=True, name="normalization")
+        self.normalization = tfa.layers.GroupNormalization(groups=1, epsilon=1e-5, center=True, scale=True, axis=-1, name="normalization")
 
         # OK
         self.activation = tf.keras.layers.LeakyReLU(alpha=0.2, name="activation")
@@ -108,7 +110,8 @@ class TFInvertedResBlock(tf.keras.layers.Layer):
 
         # TODO 1: PT's version use `torch.nn.GroupNorm`. However, TF doesn't have it (only exists in TFA).
         # TODO 2: `LayerNormalization` has default `epsilon=1e-3`, but `torch.nn.GroupNorm` has default `eps=1e-5`.
-        self.normalization = tf.keras.layers.LayerNormalization(epsilon=1e-05, center=True, scale=True, name="normalization")
+        ### self.normalization = tf.keras.layers.LayerNormalization(epsilon=1e-05, center=True, scale=True, name="normalization")
+        self.normalization = tfa.layers.GroupNormalization(groups=1, epsilon=1e-5, center=True, scale=True, axis=-1, name="normalization")
 
     def call(self, inputs, training=False):
 
@@ -126,69 +129,7 @@ class TFInvertedResBlock(tf.keras.layers.Layer):
         return x
 
 
-# class Generator(nn.Module):
-#     def __init__(self, ):
-#         super().__init__()
-#
-#         self.block_a = nn.Sequential(
-#             ConvNormLReLU(3, 32, kernel_size=7, padding=3),
-#             ConvNormLReLU(32, 64, stride=2, padding=(0, 1, 0, 1)),
-#             ConvNormLReLU(64, 64)
-#         )
-#
-#         self.block_b = nn.Sequential(
-#             ConvNormLReLU(64, 128, stride=2, padding=(0, 1, 0, 1)),
-#             ConvNormLReLU(128, 128)
-#         )
-#
-#         self.block_c = nn.Sequential(
-#             ConvNormLReLU(128, 128),
-#             InvertedResBlock(128, 256, 2),
-#             InvertedResBlock(256, 256, 2),
-#             InvertedResBlock(256, 256, 2),
-#             InvertedResBlock(256, 256, 2),
-#             ConvNormLReLU(256, 128),
-#         )
-#
-#         self.block_d = nn.Sequential(
-#             ConvNormLReLU(128, 128),
-#             ConvNormLReLU(128, 128)
-#         )
-#
-#         self.block_e = nn.Sequential(
-#             ConvNormLReLU(128, 64),
-#             ConvNormLReLU(64, 64),
-#             ConvNormLReLU(64, 32, kernel_size=7, padding=3)
-#         )
-#
-#         self.out_layer = nn.Sequential(
-#             nn.Conv2d(32, 3, kernel_size=1, stride=1, padding=0, bias=False),
-#             nn.Tanh()
-#         )
-#
-#     def forward(self, input, align_corners=True):
-#         out = self.block_a(input)
-#         half_size = out.size()[-2:]
-#         out = self.block_b(out)
-#         out = self.block_c(out)
-#
-#         if align_corners:
-#             out = F.interpolate(out, half_size, mode="bilinear", align_corners=True)
-#         else:
-#             out = F.interpolate(out, scale_factor=2, mode="bilinear", align_corners=False)
-#         out = self.block_d(out)
-#
-#         if align_corners:
-#             out = F.interpolate(out, input.size()[-2:], mode="bilinear", align_corners=True)
-#         else:
-#             out = F.interpolate(out, scale_factor=2, mode="bilinear", align_corners=False)
-#         out = self.block_e(out)
-#
-#         out = self.out_layer(out)
-#         return out
-
-
-class TFGenerator(tf.keras.layers.Layer):
+class TFGenerator(tf.keras.Model):
 
     def __init__(self, **kwargs):
 
