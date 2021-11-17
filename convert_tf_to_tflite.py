@@ -85,10 +85,10 @@ with Image.open(img_path) as img:
 # TFLite
 # Convert the model
 converter = tf.lite.TFLiteConverter.from_saved_model("./tf_saved_model")  # path to the SavedModel directory
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
+# converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
-# Ensure that if any ops can't be quantized, the converter throws an error
-converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+# # Ensure that if any ops can't be quantized, the converter throws an error
+# converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
 
 
 # TO fix the normalization (`tf.nn.batch_normalization`) `op is neither a custom op nor a flex op` issue.
