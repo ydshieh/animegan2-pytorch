@@ -119,6 +119,7 @@ for tf_weight, pt_name in zip(model_tf.weights, model_pt_state_dict):
 
     pt_weight = tf.constant(pt_weight.detach().cpu().numpy())
     if len(pt_weight.shape) == 4:
+        # Here is special: PT: Conv2D(groups=groups): (out, int/groups, k0, k1) -> TF: DepthwiseConv2D: (self.kernel_size + (input_dim, self.depth_multiplier))
         if "depthwise_kernel" in tf_weight.name:
             # TODO: check HF code
             pt_weight = tf.transpose(pt_weight, perm=(2, 3, 0, 1))
