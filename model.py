@@ -107,10 +107,4 @@ class Generator(nn.Module):
 
         out = self.out_layer(out)
         return out
-
-
-if __name__ == "__main__":
-
-    generator = Generator()
-
-    print(generator)
+        
