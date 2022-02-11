@@ -17,7 +17,7 @@ def convert_original_pt_to_pt(pretrained_name, output_name, p="./"):
 
     local_path = os.path.join(p, f"{pretrained_name}.pt")
     if not os.path.isfile(local_path):
-        original_model = torch.hub.load("bryandlee/animegan2-pytorch:main", "generator", pretrained="face_paint_512_v2")
+        original_model = torch.hub.load("bryandlee/animegan2-pytorch:main", "generator", pretrained=pretrained_name)
     else:
         original_model = Generator().eval().to(device)
         state_dict = torch.load(local_path, map_location=device)
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         return to_pil_image(output)
 
     # Inference
-    img_path = "./examples/dasha-taran-4-cropped.jpg"
+    img_path = "./samples/dasha-taran-4-cropped.jpg"
     width, height = (512, 512)
     channels = 3
 

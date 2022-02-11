@@ -131,7 +131,7 @@ if __name__ == "__main__":
         return to_pil_image(output)
 
     # Inference
-    img_path = "./examples/dasha-taran-4-cropped.jpg"
+    img_path = "./samples/dasha-taran-4-cropped.jpg"
 
     with Image.open(img_path) as img:
         shape = (width, height)

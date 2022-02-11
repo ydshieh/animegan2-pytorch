@@ -155,10 +155,10 @@ if __name__ == "__main__":
     generator = PTGenerator()
     print(generator)
 
-    for k, v in generator.state_dict().items():
-        print(k)
-        print(v.size())
-        print('--------------')
+    # for k, v in generator.state_dict().items():
+    #     print(k)
+    #     print(v.size())
+    #     print('--------------')
 
     output = generator(pixel_values, align_corners=True)
     print(output.size())

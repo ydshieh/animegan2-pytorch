@@ -20,7 +20,7 @@ print(input_details)
 print(output_details)
 
 # Inference
-img_path = "./examples/dasha-taran-4-cropped.jpg"
+img_path = "./samples/dasha-taran-4-cropped.jpg"
 width, height = (512, 512)
 channels = 3
 

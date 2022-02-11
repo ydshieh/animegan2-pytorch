@@ -305,10 +305,10 @@ if __name__ == "__main__":
 
     output = generator(pixel_values, align_corners=True)
 
-    for weight in generator.weights:
-        print(weight.name)
-        print(tf.shape(weight))
-        print('--------------')
+    # for weight in generator.weights:
+    #     print(weight.name)
+    #     print(tf.shape(weight))
+    #     print('--------------')
 
     print(tf.shape(output))
 
