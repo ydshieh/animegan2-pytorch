@@ -1,18 +1,16 @@
+import os
 import tensorflow as tf
-from PIL import Image
 import time
-import datetime
-from torchvision.transforms.functional import to_tensor
-
+import torch
 from PIL import Image
-# import tflite_runtime.interpreter as tflite
+from torchvision.transforms.functional import to_tensor, to_pil_image
 
 
-# interpreter = tflite.Interpreter(model_path="tflite_model.tflite")
-interpreter = tf.lite.Interpreter(model_path="tflite_model.tflite")
+p = "./weights/"
+pretrained_name = "face_paint_512_v2"
+tflite_path = os.path.join(p, f"{pretrained_name}.tflite")
 
-print(interpreter)
-
+interpreter = tf.lite.Interpreter(model_path=tflite_path)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -21,15 +19,10 @@ output_details = interpreter.get_output_details()
 print(input_details)
 print(output_details)
 
-
-
-
 # Inference
 img_path = "./examples/dasha-taran-4-cropped.jpg"
 width, height = (512, 512)
 channels = 3
-
-
 
 with Image.open(img_path) as img:
     shape = (width, height)
@@ -40,75 +33,17 @@ with Image.open(img_path) as img:
 
 input_data = img_tf
 
+for i in range(2):
 
-interpreter.set_tensor(input_details[0]['index'], input_data)
+    interpreter.set_tensor(input_details[0]['index'], input_data)
 
-start_time = time.time()
-# print(datetime.datetime.now())
+    start_time = time.time()
 
-interpreter.invoke()
+    interpreter.invoke()
+    output_data = interpreter.get_tensor(output_details[0]['index'])
 
-# stop_time = time.time()
-# print(datetime.datetime.now())
-# print('time: {:.3f}ms'.format((stop_time - start_time) * 1000))
-
-output_data = interpreter.get_tensor(output_details[0]['index'])
-
-# print(datetime.datetime.now())
-
-stop_time = time.time()
-print('time: {:.3f}ms'.format((stop_time - start_time) * 1000))
-
-
-
-
-
-# interpreter.set_tensor(input_details[0]['index'], input_data)
-#
-# start_time = time.time()
-# # print(datetime.datetime.now())
-#
-# interpreter.invoke()
-#
-# # stop_time = time.time()
-# # print(datetime.datetime.now())
-# # print('time: {:.3f}ms'.format((stop_time - start_time) * 1000))
-#
-# output_data = interpreter.get_tensor(output_details[0]['index'])
-#
-# # print(datetime.datetime.now())
-#
-# stop_time = time.time()
-# print('time: {:.3f}ms'.format((stop_time - start_time) * 1000))
-#
-#
-#
-#
-# interpreter.set_tensor(input_details[0]['index'], input_data)
-#
-# start_time = time.time()
-# # print(datetime.datetime.now())
-#
-# interpreter.invoke()
-#
-# # stop_time = time.time()
-# # print(datetime.datetime.now())
-# # print('time: {:.3f}ms'.format((stop_time - start_time) * 1000))
-#
-# output_data = interpreter.get_tensor(output_details[0]['index'])
-#
-# # print(datetime.datetime.now())
-#
-# stop_time = time.time()
-# print('time: {:.3f}ms'.format((stop_time - start_time) * 1000))
-
-
-
-
-
-
-import torch
-from torchvision.transforms.functional import to_tensor, to_pil_image
+    stop_time = time.time()
+    print('time: {:.3f}ms'.format((stop_time - start_time) * 1000))
 
 device = "cpu"
 # Change (B, H, W, C) to (B, C, H, W)
@@ -119,6 +54,5 @@ output = torch.tensor(output.numpy()).to(device)
 output = (output * 0.5 + 0.5).clip(0, 1)
 animed_img = to_pil_image(output)
 animed_img.show()
-#
-#
-# print(output_data)
+
+print(output_data)

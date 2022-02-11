@@ -1,4 +1,3 @@
-import torch
 from torch import nn
 import torch.nn.functional as F
 
@@ -15,12 +14,19 @@ class PTConvNormLReLU(nn.Module):
             "reflect": nn.ReflectionPad2d,
         }
         if pad_mode not in pad_layer:
-            raise NotImplementedError
+            raise ValueError(f"`pad_model` must be one of {list(pad_layer.keys())}. Got {pad_mode} instead.")
 
         self.pad = pad_layer[pad_mode](padding)
-        self.conv2d = nn.Conv2d(in_ch, out_ch, kernel_size=kernel_size, stride=stride, padding=0, groups=groups, bias=bias)
+        self.conv2d = nn.Conv2d(
+            in_ch, out_ch,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=0,
+            groups=groups,
+            bias=bias,
+        )
         self.normalization = nn.GroupNorm(num_groups=1, num_channels=out_ch, affine=True)
-        self.activation = nn.LeakyReLU(0.2, inplace=True)
+        self.activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
 
     def forward(self, inputs):
 
@@ -42,15 +48,15 @@ class PTInvertedResBlock(nn.Module):
         bottleneck = int(round(in_ch * expansion_ratio))
 
         if expansion_ratio != 1:
-            self.expansion = PTConvNormLReLU(in_ch, bottleneck, kernel_size=1, padding=0)
+            self.expansion = PTConvNormLReLU(in_ch=in_ch, out_ch=bottleneck, kernel_size=1, padding=0)
         else:
             self.expansion = None
 
         # dw
-        self.bottleneck = PTConvNormLReLU(bottleneck, bottleneck, groups=bottleneck, bias=True)
+        self.bottleneck = PTConvNormLReLU(in_ch=bottleneck, out_ch=bottleneck, groups=bottleneck, bias=True)
 
         # pw
-        self.conv2d = nn.Conv2d(bottleneck, out_ch, kernel_size=1, padding=0, bias=False)
+        self.conv2d = nn.Conv2d(in_channels=bottleneck, out_channels=out_ch, kernel_size=1, padding=0, bias=False)
 
         self.normalization = nn.GroupNorm(num_groups=1, num_channels=out_ch, affine=True)
 
@@ -115,7 +121,9 @@ class PTGenerator(nn.Module):
     def forward(self, input, align_corners=True):
 
         out = self.block_a(input)
+
         half_size = out.size()[-2:]
+
         out = self.block_b(out)
         out = self.block_c(out)
 
@@ -123,12 +131,14 @@ class PTGenerator(nn.Module):
             out = F.interpolate(out, half_size, mode="bilinear", align_corners=True)
         else:
             out = F.interpolate(out, scale_factor=2, mode="bilinear", align_corners=False)
+
         out = self.block_d(out)
 
         if align_corners:
             out = F.interpolate(out, input.size()[-2:], mode="bilinear", align_corners=True)
         else:
             out = F.interpolate(out, scale_factor=2, mode="bilinear", align_corners=False)
+
         out = self.block_e(out)
 
         out = self.out_layer(out)
@@ -137,10 +147,18 @@ class PTGenerator(nn.Module):
 
 if __name__ == "__main__":
 
-    generator = PTGenerator()
+    import torch
 
+    (N, C, H, W) = (1, 3, 64, 64)
+    pixel_values = torch.zeros(size=(N, C, H, W))
+
+    generator = PTGenerator()
     print(generator)
 
-    for k in generator.state_dict():
+    for k, v in generator.state_dict().items():
         print(k)
+        print(v.size())
         print('--------------')
+
+    output = generator(pixel_values, align_corners=True)
+    print(output.size())
